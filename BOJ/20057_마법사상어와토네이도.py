@@ -1,4 +1,4 @@
-# 해답 참고; 다시 풀어보기
+# 해답 참고 - 다시 풀어보기
 N = int(input())
 grid = [list(map(int, input().split())) for _ in range(N)]
 
