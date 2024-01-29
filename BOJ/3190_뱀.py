@@ -1,63 +1,69 @@
-# https://www.acmicpc.net/problem/3190
 from collections import deque
+from pprint import pprint
 
-n = int(input())
-k = int(input())
-board = [[0] * (n + 1) for _ in range(n + 1)]
+N = int(input())
+board = [[0] * N for _ in range(N)]
+K = int(input()) # 사과 개수
 
-for _ in range(k):
-    a, b = map(int, input().split())
-    board[a][b] = 1  # 사과가 있으면 1
+for _ in range(K):
+    x, y = map(int, input().split())
+    board[x-1][y-1] = 2 # 사과
 
-l = int(input())
-change = []
-for _ in range(l):
-    x, c = input().split()
-    change.append((int(x), c))
+# pprint(board)
 
-# 동, 남, 서, 북
+# 오른쪽부터 시계 방향 (동남서북)
 dx = [0, 1, 0, -1]
 dy = [1, 0, -1, 0]
 
-def turn(direction, c):
-    if c == "L":
-        direction = (direction - 1) % 4
+# 'L': 왼쪽, 'D': 오른쪽으로 90도
+def turn(c):
+    global direction
+    if c == 'L':
+        direction = (direction-1) % 4
     else:
-        direction = (direction + 1) % 4
-    return direction
+        direction = (direction+1) % 4
 
 
-### 구현 ###
-x, y = 1, 1
-board[x][y] = 2  # 뱀이 있으면 2
+XC = {}  # 방향 변환 저장
+L = int(input()) # 방향 변환 횟수
+for _ in range(L):
+    x, c = input().split()
+    XC[int(x)] = c
+
+q = deque() # 뱀 위치 저장
+q.append((0, 0))
+x, y = 0, 0
+board[x][y] = 1 # 뱀
+
 direction = 0
 time = 0
-snake = deque()  # 뱀이 있는 위치 저장
-snake.append((x, y))
 
-while True:
+while q:
+    pprint(board)
+    time += 1
+    # 다음 칸에 위치할 머리
     nx = x + dx[direction]
     ny = y + dy[direction]
 
-    time += 1
-    if 1 <= nx and nx <= n and 1 <= ny and ny <= n and board[nx][ny] != 2:
-        # 사과 없음: 이동 후 꼬리 제거
-        if board[nx][ny] == 0:
-            board[nx][ny] = 2
-            snake.append((nx, ny))
-            px, py = snake.popleft()
-            board[px][py] = 0
-        # 사과 있음: 이동만
-        else:
-            board[nx][ny] = 2
-            snake.append((nx, ny))
-    else:
+    # 벽이나 몸에 부딪히면 끝
+    if 0 > nx or nx >= N or 0 > ny or ny >= N or board[nx][ny] == 1:
         break
 
+    # 사과가 없으면
+    elif board[nx][ny] == 0:
+        # 꼬리 비워주기
+        tx, ty = q.popleft()
+        board[tx][ty] = 0
+
+    # 사과가 있든 없든 머리는 늘어남
+    board[nx][ny] = 1
+    q.append((nx, ny))
+
+    # 다음 시작점 갱신
     x, y = nx, ny
 
-    if change and time == change[0][0]:
-        direction = turn(direction, change[0][1])
-        change.pop(0)
+    # 회전
+    if time in XC:
+        turn(XC[time])
 
 print(time)
